@@ -56,7 +56,7 @@ Jupiter and Helius API keys are **never exposed to the client**. They're kept as
 ### Setup
 
 ```bash
-git clone https://github.com/vibhusharma99/spl-forex.git
+git clone https://github.com/vnorby/spl-forex.git
 cd spl-forex
 
 pnpm install
