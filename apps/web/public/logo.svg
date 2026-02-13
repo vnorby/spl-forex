@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <!-- Abstract FX flow mark: two interlocking currency arrows forming an S/F motif -->
+  <path d="M14 8 L34 8 L34 14 L20 14 L20 20 L32 20 L32 26 L20 26 L20 40 L14 40 Z" fill="#00e5c8" opacity="0.9"/>
+  <path d="M24 12 L38 24 L24 36 L24 28 L16 28 L16 20 L24 20 Z" fill="#00b4d8" opacity="0.5"/>
+  <!-- Corner accent dot -->
+  <circle cx="38" cy="8" r="2.5" fill="#00e5c8"/>
+</svg>

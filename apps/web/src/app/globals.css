@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #07080c;
+  --color-bg-subtle: #0b0d13;
+  --color-surface: #0f1118;
+  --color-surface-hover: #151820;
+  --color-surface-active: #1d2130;
+  --color-surface-elevated: #1a1d28;
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-bright: rgba(255, 255, 255, 0.1);
+
+  --color-text: #e8e9ed;
+  --color-text-secondary: #9498a8;
+  --color-text-muted: #5c6070;
+
+  --color-accent: #00e5c8;
+  --color-accent-dim: rgba(0, 229, 200, 0.15);
+  --color-accent-glow: rgba(0, 229, 200, 0.3);
+  --color-accent-gradient: linear-gradient(135deg, #00e5c8, #00b4d8);
+
+  --color-warm: #f5a623;
+  --color-warm-dim: rgba(245, 166, 35, 0.12);
+
+  --color-up: #00dc82;
+  --color-up-dim: rgba(0, 220, 130, 0.12);
+  --color-down: #ff4757;
+  --color-down-dim: rgba(255, 71, 87, 0.12);
+
+  --color-primary: #00e5c8;
+  --color-primary-hover: #00ffd9;
+  --color-success: #00dc82;
+  --color-warning: #f5a623;
+  --color-danger: #ff4757;
+
+  /* Glass-morphism for elevated panels */
+  --glass-bg: rgba(15, 17, 24, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: blur(16px);
+
+  /* Font families set by next/font CSS variables */
+  --font-display: 'DM Serif Display', serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px;
+}
+
+@keyframes tickUp {
+  0% { color: var(--color-up); background: var(--color-up-dim); }
+  100% { color: inherit; background: transparent; }
+}
+@keyframes tickDown {
+  0% { color: var(--color-down); background: var(--color-down-dim); }
+  100% { color: inherit; background: transparent; }
+}
+.tick-up { animation: tickUp 1.2s ease-out; }
+.tick-down { animation: tickDown 1.2s ease-out; }
+
+@keyframes rowEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.row-enter { animation: rowEnter 0.4s ease-out both; }
+
+@keyframes subtleGlow {
+  0%, 100% { box-shadow: 0 0 4px rgba(0, 229, 200, 0.12); }
+  50% { box-shadow: 0 0 14px rgba(0, 229, 200, 0.25); }
+}
+.badge-glow { animation: subtleGlow 3s ease-in-out infinite; }
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.live-pulse { animation: livePulse 2s ease-in-out infinite; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--color-bg); }
+::-webkit-scrollbar-thumb { background: var(--color-border-bright); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-text-muted); }
+
+::selection { background: var(--color-accent-dim); color: var(--color-accent); }
