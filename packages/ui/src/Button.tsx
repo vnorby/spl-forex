@@ -21,7 +21,7 @@ export function Button({
       className={cn(
         "inline-flex items-center justify-center font-bold uppercase tracking-wider transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.98]",
         variant === "primary" &&
-          "border-2 border-[var(--color-accent)] text-black hover:shadow-[0_0_24px_rgba(0,229,200,0.3)] focus-visible:ring-[var(--color-accent)]",
+          "border-2 border-[var(--color-accent)] hover:shadow-[0_0_24px_rgba(0,229,200,0.3)] focus-visible:ring-[var(--color-accent)]",
         variant === "secondary" &&
           "border-2 border-[var(--color-accent)] bg-transparent text-[var(--color-accent)] hover:bg-[var(--color-accent-dim)] focus-visible:ring-[var(--color-accent)]",
         variant === "ghost" &&
@@ -33,7 +33,7 @@ export function Button({
       )}
       style={{
         fontFamily: "var(--font-mono)",
-        ...(variant === "primary" ? { background: "var(--color-accent)" } : {}),
+        ...(variant === "primary" ? { background: "var(--color-accent)", color: "#000000" } : {}),
       }}
       disabled={disabled || loading}
       {...props}
