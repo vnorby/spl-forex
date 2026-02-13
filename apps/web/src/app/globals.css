@@ -7,12 +7,12 @@
   --color-surface-hover: #151820;
   --color-surface-active: #1d2130;
   --color-surface-elevated: #1a1d28;
-  --color-border: rgba(255, 255, 255, 0.06);
-  --color-border-bright: rgba(255, 255, 255, 0.1);
+  --color-border: rgba(255, 255, 255, 0.10);
+  --color-border-bright: rgba(255, 255, 255, 0.16);
 
   --color-text: #e8e9ed;
   --color-text-secondary: #9498a8;
-  --color-text-muted: #5c6070;
+  --color-text-muted: #7b7f93;
 
   --color-accent: #00e5c8;
   --color-accent-dim: rgba(0, 229, 200, 0.15);
@@ -35,7 +35,7 @@
 
   /* Glass-morphism for elevated panels */
   --glass-bg: rgba(15, 17, 24, 0.8);
-  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.12);
   --glass-blur: blur(16px);
 
   /* Font families set by next/font CSS variables */
