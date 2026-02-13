@@ -25,7 +25,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
   }
 
   return (
-    <header className="relative border-b border-[var(--color-border)]">
+    <header className="sticky top-0 z-40 border-b border-[var(--color-border)]" style={{ background: "var(--color-bg)" }}>
       {/* Gradient accent line */}
       <div
         className="absolute inset-x-0 top-0 h-px"
