@@ -37,3 +37,6 @@ pnpm-debug.log*
 # Claude Code
 .claude/
 gh
+
+.cursor/
+.agents/
