@@ -1,31 +1,38 @@
 "use client";
 
 import React, { useMemo } from "react";
-import {
-  ConnectionProvider,
-  WalletProvider,
-} from "@solana/wallet-adapter-react";
-import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
-import { PhantomWalletAdapter, SolflareWalletAdapter } from "@solana/wallet-adapter-wallets";
+import { AppProvider } from "@solana/connector/react";
+import { getDefaultConfig } from "@solana/connector/headless";
 import { env } from "@/config/env";
 
-import "@solana/wallet-adapter-react-ui/styles.css";
-
 export function SolanaProvider({ children }: { children: React.ReactNode }) {
-  // Prefer Helius RPC when available for staked connections + enhanced APIs
-  const endpoint = env.heliusRpcUrl ?? env.solanaRpcUrl;
-  const wsEndpoint = env.heliusWsUrl ?? undefined;
-
-  const wallets = useMemo(
-    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
+  const connectorConfig = useMemo(
+    () =>
+      getDefaultConfig({
+        appName: "SolaFX",
+        appUrl: "https://solafx.app",
+        autoConnect: true,
+        clusters: [
+          {
+            id: "solana:mainnet",
+            label: "Mainnet",
+            url:
+              env.solanaNetwork === "mainnet-beta"
+                ? (env.heliusRpcUrl ?? env.solanaRpcUrl)
+                : "https://api.mainnet-beta.solana.com",
+          },
+          {
+            id: "solana:devnet",
+            label: "Devnet",
+            url:
+              env.solanaNetwork === "devnet"
+                ? (env.heliusRpcUrl ?? env.solanaRpcUrl)
+                : "https://api.devnet.solana.com",
+          },
+        ],
+      }),
     [],
   );
 
-  return (
-    <ConnectionProvider endpoint={endpoint} config={{ wsEndpoint }}>
-      <WalletProvider wallets={wallets} autoConnect>
-        <WalletModalProvider>{children}</WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
-  );
+  return <AppProvider connectorConfig={connectorConfig}>{children}</AppProvider>;
 }

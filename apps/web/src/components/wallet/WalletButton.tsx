@@ -1,17 +1,21 @@
 "use client";
 
-import React from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import React, { useState } from "react";
 import { Button } from "@solafx/ui";
+import { useSolanaWallet } from "@/hooks/useSolanaWallet";
 
 export function WalletButton() {
-  const { publicKey, disconnect, connecting } = useWallet();
-  const { setVisible } = useWalletModal();
+  const [isChooserOpen, setIsChooserOpen] = useState(false);
+  const {
+    walletAddress,
+    isConnecting,
+    disconnectWallet,
+    connectWallet,
+    connectors,
+  } = useSolanaWallet();
 
-  if (publicKey) {
-    const address = publicKey.toBase58();
-    const short = `${address.slice(0, 4)}...${address.slice(-4)}`;
+  if (walletAddress) {
+    const short = `${walletAddress.slice(0, 4)}...${walletAddress.slice(-4)}`;
     return (
       <div className="flex items-center gap-1.5">
         <div
@@ -32,7 +36,7 @@ export function WalletButton() {
           {short}
         </div>
         <button
-          onClick={() => disconnect()}
+          onClick={() => disconnectWallet()}
           className="border px-2 py-1.5 text-[10px] uppercase tracking-wider transition-colors"
           style={{
             fontFamily: "var(--font-mono)",
@@ -55,14 +59,53 @@ export function WalletButton() {
     );
   }
 
+  const availableConnectors = connectors.filter((connector) => connector.ready);
+
   return (
-    <Button
-      variant="primary"
-      size="sm"
-      loading={connecting}
-      onClick={() => setVisible(true)}
-    >
-      Connect Wallet
-    </Button>
+    <div className="relative">
+      <Button
+        variant="primary"
+        size="sm"
+        loading={isConnecting}
+        onClick={() => setIsChooserOpen((open) => !open)}
+      >
+        Connect Wallet
+      </Button>
+
+      {isChooserOpen && (
+        <div
+          className="absolute right-0 z-50 mt-2 min-w-44 border p-1.5"
+          style={{
+            borderColor: "var(--color-border-bright)",
+            background: "var(--color-surface)",
+          }}
+        >
+          {availableConnectors.map((connector) => (
+            <button
+              key={connector.id}
+              onClick={() => {
+                connectWallet(connector.id);
+                setIsChooserOpen(false);
+              }}
+              className="block w-full px-2 py-1.5 text-left text-xs uppercase tracking-wider transition-colors"
+              style={{
+                fontFamily: "var(--font-mono)",
+                color: "var(--color-text-secondary)",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = "var(--color-accent)";
+                e.currentTarget.style.background = "var(--color-accent-dim)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = "var(--color-text-secondary)";
+                e.currentTarget.style.background = "transparent";
+              }}
+            >
+              {connector.name}
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

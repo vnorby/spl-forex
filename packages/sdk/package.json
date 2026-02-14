@@ -12,8 +12,7 @@
   },
   "dependencies": {
     "@pythnetwork/hermes-client": "^3.1.0",
-    "@solafx/types": "workspace:*",
-    "@solana/web3.js": "^1.98.4"
+    "@solafx/types": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.3",

@@ -1,26 +1,26 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useConnection } from "@solana/wallet-adapter-react";
-import { VersionedTransaction } from "@solana/web3.js";
 import { useQueryClient } from "@tanstack/react-query";
+import { createSolanaRpc, signature } from "@solana/kit";
 import { swapExecutor } from "@/lib/sdk";
+import { env } from "@/config/env";
+import { useSolanaWallet } from "@/hooks/useSolanaWallet";
 import { useToast } from "@/components/providers/ToastProvider";
 import type { SwapStatus, SwapResult, RateComparison } from "@solafx/types";
 
 export function useSwapExecution() {
-  const { signTransaction } = useWallet();
-  const { connection } = useConnection();
+  const { signTransactionBase64 } = useSolanaWallet();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [status, setStatus] = useState<SwapStatus>("idle");
   const [result, setResult] = useState<SwapResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const rpc = createSolanaRpc(env.heliusRpcUrl ?? env.solanaRpcUrl);
 
   const execute = useCallback(
     async (comparison: RateComparison) => {
-      if (!signTransaction || !comparison.jupiterOrderData) {
+      if (!comparison.jupiterOrderData) {
         setError("Wallet not connected or no transaction data");
         return;
       }
@@ -30,13 +30,9 @@ export function useSwapExecution() {
         setError(null);
         setResult(null);
 
-        const txBuffer = Buffer.from(
+        const signedBase64 = await signTransactionBase64(
           comparison.jupiterOrderData.transaction,
-          "base64",
         );
-        const tx = VersionedTransaction.deserialize(txBuffer);
-        const signedTx = await signTransaction(tx);
-        const signedBase64 = Buffer.from(signedTx.serialize()).toString("base64");
 
         setStatus("executing");
 
@@ -51,12 +47,21 @@ export function useSwapExecution() {
           // Monitor on-chain confirmation
           setStatus("confirming");
           try {
-            const confirmation = await connection.confirmTransaction(
-              swapResult.signature,
-              "confirmed",
-            );
+            let confirmationError: unknown = null;
+            for (let attempt = 0; attempt < 8; attempt++) {
+              const { value } = await rpc
+                .getSignatureStatuses([signature(swapResult.signature)])
+                .send();
+              const confirmation = value?.[0];
+              if (confirmation?.err) {
+                confirmationError = confirmation.err;
+                break;
+              }
+              if (confirmation?.confirmationStatus) break;
+              await new Promise((resolve) => setTimeout(resolve, 1_500));
+            }
 
-            if (confirmation.value.err) {
+            if (confirmationError) {
               setStatus("error");
               setError("Transaction failed on-chain");
               toast({ type: "error", title: "Swap Failed", message: "Transaction reverted on-chain" });
@@ -110,7 +115,7 @@ export function useSwapExecution() {
         }
       }
     },
-    [signTransaction, connection, queryClient, toast],
+    [queryClient, rpc, signTransactionBase64, toast],
   );
 
   const reset = useCallback(() => {

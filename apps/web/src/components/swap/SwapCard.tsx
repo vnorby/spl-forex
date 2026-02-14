@@ -1,8 +1,6 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { Card, Button } from "@solafx/ui";
 import { TokenSelector } from "./TokenSelector";
 import { AmountInput } from "./AmountInput";
@@ -13,6 +11,7 @@ import { WalletBalance } from "@/components/wallet/WalletBalance";
 import { useJupiterQuote } from "@/hooks/useJupiterQuote";
 import { useSwapExecution } from "@/hooks/useSwapExecution";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
+import { useSolanaWallet } from "@/hooks/useSolanaWallet";
 import { formatAmount } from "@/lib/utils";
 import { rateEngine } from "@/lib/sdk";
 import type { RateComparison } from "@solafx/types";
@@ -22,8 +21,7 @@ interface SwapCardProps {
 }
 
 export function SwapCard({ initialPair }: SwapCardProps) {
-  const { publicKey } = useWallet();
-  const { setVisible } = useWalletModal();
+  const { walletAddress, connectDefaultWallet } = useSolanaWallet();
   const { balances } = useTokenBalances();
   const { status, result, error, execute, reset } = useSwapExecution();
 
@@ -77,8 +75,8 @@ export function SwapCard({ initialPair }: SwapCardProps) {
   );
 
   const handleSwapClick = useCallback(async () => {
-    if (!publicKey) {
-      setVisible(true);
+    if (!walletAddress) {
+      connectDefaultWallet();
       return;
     }
 
@@ -88,14 +86,14 @@ export function SwapCard({ initialPair }: SwapCardProps) {
         inputToken,
         outputToken,
         amount: numAmount,
-        taker: publicKey.toBase58(),
+        taker: walletAddress ?? undefined,
       });
       setExecComparison(comp);
       setConfirmOpen(true);
     } catch {
       // Error fetching executable quote
     }
-  }, [publicKey, inputToken, outputToken, numAmount, setVisible]);
+  }, [connectDefaultWallet, walletAddress, inputToken, outputToken, numAmount]);
 
   const handleConfirm = useCallback(async () => {
     if (!execComparison) return;
@@ -177,12 +175,12 @@ export function SwapCard({ initialPair }: SwapCardProps) {
         <RateComparisonPanel comparison={comparison} loading={isLoading && numAmount > 0} />
 
         {/* Swap Button */}
-        {!publicKey ? (
+        {!walletAddress ? (
           <Button
             variant="primary"
             size="lg"
             className="w-full"
-            onClick={() => setVisible(true)}
+            onClick={() => connectDefaultWallet()}
           >
             Connect Wallet
           </Button>
