@@ -109,14 +109,14 @@ export function WalletModal({ open, onOpenChange }: WalletModalProps) {
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className="sm:max-w-md [&>button]:hidden rounded-[24px]">
+            <DialogContent className="sm:max-w-md [&>button]:hidden rounded-xl">
                 <DialogHeader className="flex flex-row items-center justify-between">
                     <DialogTitle>Connect your wallet</DialogTitle>
                     <DialogClose asChild>
                         <Button
                             type="button"
                             variant="outline"
-                            className="rounded-[16px] size-8 p-2 shrink-0 cursor-pointer"
+                            className="rounded-lg size-8 p-2 shrink-0 cursor-pointer"
                             aria-label="Close"
                         >
                             <X className="size-4" />
@@ -144,7 +144,7 @@ export function WalletModal({ open, onOpenChange }: WalletModalProps) {
                                                     <Button
                                                         key={connector.id}
                                                         variant="outline"
-                                                        className="h-auto justify-between p-4 rounded-[16px]"
+                                                        className="h-auto justify-between p-4 rounded-xl"
                                                         onClick={() => handleSelectWallet(connector)}
                                                         disabled={isThisConnecting}
                                                     >
@@ -198,7 +198,7 @@ export function WalletModal({ open, onOpenChange }: WalletModalProps) {
                                             <AccordionItem value="other-wallets" className="border-none">
                                                 <AccordionTrigger
                                                     hideChevron
-                                                    className="rounded-[16px] border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 shadow-sm transition-colors hover:bg-[var(--color-surface-hover)] hover:no-underline cursor-pointer active:scale-[0.98]"
+                                                    className="rounded-xl border border-[var(--color-border)] bg-[var(--color-surface)] px-4 py-2 shadow-sm transition-colors hover:bg-[var(--color-surface-hover)] hover:no-underline cursor-pointer active:scale-[0.98]"
                                                 >
                                                     <div className="flex flex-1 items-center justify-between">
                                                         <span>Other Wallets</span>
@@ -220,7 +220,7 @@ export function WalletModal({ open, onOpenChange }: WalletModalProps) {
                                                                 <Button
                                                                     key={connector.id}
                                                                     variant="outline"
-                                                                    className="h-auto justify-between p-4 rounded-[16px]"
+                                                                        className="h-auto justify-between p-4 rounded-xl"
                                                                     onClick={() => handleSelectWallet(connector)}
                                                                     disabled={isThisConnecting}
                                                                 >
@@ -288,7 +288,7 @@ export function WalletModal({ open, onOpenChange }: WalletModalProps) {
                                                     <Button
                                                         key={connector.id}
                                                         variant="outline"
-                                                        className="h-auto justify-between p-4 rounded-[16px] hover:cursor-pointer"
+                                                        className="h-auto justify-between p-4 rounded-xl hover:cursor-pointer"
                                                         onClick={() =>
                                                             window.open(getInstallUrl(connector.name), '_blank')
                                                         }
@@ -326,7 +326,7 @@ export function WalletModal({ open, onOpenChange }: WalletModalProps) {
                                 )}
 
                                 {connectors.length === 0 && (
-                                    <div className="rounded-lg border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
+                                    <div className="rounded-xl border border-dashed border-[var(--color-border)] bg-[var(--color-surface)] p-8 text-center">
                                         <Wallet className="mx-auto h-12 w-12 text-[var(--color-text-muted)] mb-3" />
                                         <h3 className="font-semibold mb-2">No Wallets Detected</h3>
                                         <p className="text-sm text-[var(--color-text-muted)] mb-6">

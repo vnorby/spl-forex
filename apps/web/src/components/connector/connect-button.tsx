@@ -54,7 +54,7 @@ export function ConnectButton({ className }: ConnectButtonProps) {
                 <DropdownMenuContent
                     align="end"
                     side="bottom"
-                    className="p-0 rounded-[20px] border-[var(--color-border-bright)] bg-[var(--color-bg-subtle)] shadow-xl"
+                    className="p-0 rounded-xl border-[var(--color-border-bright)] bg-[var(--color-bg-subtle)] shadow-xl"
                 >
                     <WalletDropdownContent
                         selectedAccount={account}
