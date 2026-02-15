@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
+import { useCluster } from "@solana/connector/react";
 import { WalletButton } from "@/components/wallet/WalletButton";
 import { StablecoinSettings } from "@/components/settings/StablecoinSettings";
-import { env } from "@/config/env";
+import { Logo } from "@/components/layout/Logo";
+import { getSolanaClusterLabel, isSolanaDevnetCluster } from "@/lib/solana-cluster";
 
 export type AppTab = "markets" | "matrix" | "arbitrage" | "tools" | "swap";
 
@@ -14,10 +15,12 @@ interface HeaderProps {
 }
 
 const TABS: AppTab[] = ["markets", "matrix", "arbitrage", "tools", "swap"];
-const isDevnet = env.solanaNetwork === "devnet";
 
 export function Header({ activeTab, onTabChange }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { cluster } = useCluster();
+  const isDevnet = isSolanaDevnetCluster(cluster?.id);
+  const clusterLabel = getSolanaClusterLabel(cluster);
 
   function handleTabClick(tab: AppTab) {
     onTabChange(tab);
@@ -37,15 +40,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
         <div className="flex items-center gap-4 md:gap-8">
           {/* Logo */}
           <div className="flex items-center gap-2.5">
-            <Image src="/logo.svg" alt="" width={28} height={28} priority />
-            <div className="flex items-baseline gap-0">
-              <span className="text-xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                spl.
-              </span>
-              <span className="text-xl tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--color-accent)" }}>
-                forex
-              </span>
-            </div>
+            <Logo className="h-5 w-auto md:h-[21px]" />
           </div>
 
           {/* Desktop nav */}
@@ -83,7 +78,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
                 background: isDevnet ? "var(--color-warm-dim)" : "transparent",
               }}
             >
-              {isDevnet ? "Devnet" : "Mainnet"}
+              {clusterLabel}
             </span>
             <WalletButton />
           </div>
@@ -163,7 +158,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
                   background: isDevnet ? "var(--color-warm-dim)" : "transparent",
                 }}
               >
-                {isDevnet ? "Devnet" : "Mainnet"}
+                {clusterLabel}
               </span>
             </div>
             <WalletButton />

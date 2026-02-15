@@ -12,24 +12,32 @@ export function SolanaProvider({ children }: { children: React.ReactNode }) {
         appName: "SolaFX",
         appUrl: "https://solafx.app",
         autoConnect: true,
-        clusters: [
-          {
-            id: "solana:mainnet",
-            label: "Mainnet",
-            url:
-              env.solanaNetwork === "mainnet-beta"
-                ? (env.heliusRpcUrl ?? env.solanaRpcUrl)
-                : "https://api.mainnet-beta.solana.com",
-          },
-          {
-            id: "solana:devnet",
-            label: "Devnet",
-            url:
-              env.solanaNetwork === "devnet"
-                ? (env.heliusRpcUrl ?? env.solanaRpcUrl)
-                : "https://api.devnet.solana.com",
-          },
-        ],
+        clusters:
+          env.solanaNetwork === "devnet"
+            ? [
+                {
+                  id: "solana:devnet",
+                  label: "Devnet",
+                  url: env.heliusRpcUrl ?? env.solanaRpcUrl,
+                },
+                {
+                  id: "solana:mainnet",
+                  label: "Mainnet",
+                  url: "https://api.mainnet-beta.solana.com",
+                },
+              ]
+            : [
+                {
+                  id: "solana:mainnet",
+                  label: "Mainnet",
+                  url: env.heliusRpcUrl ?? env.solanaRpcUrl,
+                },
+                {
+                  id: "solana:devnet",
+                  label: "Devnet",
+                  url: "https://api.devnet.solana.com",
+                },
+              ],
       }),
     [],
   );

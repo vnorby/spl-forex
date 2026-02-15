@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   address,
@@ -8,6 +8,7 @@ import {
   createSolanaRpcSubscriptions,
 } from "@solana/kit";
 import { useKitTransactionSigner } from "@solana/connector";
+import { useCluster } from "@solana/connector/react";
 import { TransactionBuilder } from "@pipeit/core";
 import {
   createMetisClient,
@@ -16,19 +17,24 @@ import {
 import { TOKEN_REGISTRY } from "@solafx/sdk";
 import { env } from "@/config/env";
 import { useToast } from "@/components/providers/ToastProvider";
+import { getSolanaExplorerClusterQuery } from "@/lib/solana-cluster";
 import type { SwapStatus, SwapResult, RateComparison } from "@solafx/types";
 
 export function useSwapExecution() {
   const { signer, ready } = useKitTransactionSigner();
+  const { cluster } = useCluster();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [status, setStatus] = useState<SwapStatus>("idle");
   const [result, setResult] = useState<SwapResult | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const rpcUrl = env.heliusRpcUrl ?? env.solanaRpcUrl;
-  const wsUrl = rpcUrl.replace(/^http/, "ws");
-  const rpc = createSolanaRpc(rpcUrl);
-  const rpcSubscriptions = createSolanaRpcSubscriptions(wsUrl);
+  const rpcUrl = cluster?.url ?? env.heliusRpcUrl ?? env.solanaRpcUrl;
+  const wsUrl = useMemo(() => rpcUrl.replace(/^http/, "ws"), [rpcUrl]);
+  const rpc = useMemo(() => createSolanaRpc(rpcUrl), [rpcUrl]);
+  const rpcSubscriptions = useMemo(
+    () => createSolanaRpcSubscriptions(wsUrl),
+    [wsUrl],
+  );
   const metisClient = createMetisClient({
     // Server route injects JUPITER_API_KEY securely.
     baseUrl: "/api/jupiter/metis",
@@ -133,7 +139,7 @@ export function useSwapExecution() {
         const swapResult: SwapResult = {
           status: "Success",
           signature: txSignature,
-          explorerUrl: buildExplorerUrl(txSignature),
+          explorerUrl: buildExplorerUrl(txSignature, cluster?.id),
         };
 
         setResult(swapResult);
@@ -169,7 +175,7 @@ export function useSwapExecution() {
         }
       }
     },
-    [metisClient, queryClient, ready, rpc, rpcSubscriptions, signer, toast],
+    [cluster?.id, metisClient, queryClient, ready, rpc, rpcSubscriptions, signer, toast],
   );
 
   const reset = useCallback(() => {
@@ -181,9 +187,9 @@ export function useSwapExecution() {
   return { status, result, error, execute, reset };
 }
 
-function buildExplorerUrl(txSignature: string) {
-  const clusterParam = env.solanaNetwork === "devnet" ? "?cluster=devnet" : "";
-  return `https://explorer.solana.com/tx/${txSignature}${clusterParam}`;
+function buildExplorerUrl(txSignature: string, clusterId?: string | null) {
+  const clusterQuery = getSolanaExplorerClusterQuery(clusterId);
+  return `https://explorer.solana.com/tx/${txSignature}${clusterQuery}`;
 }
 
 function saveToHistory(comparison: RateComparison, result: SwapResult) {
