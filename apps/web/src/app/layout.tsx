@@ -1,23 +1,41 @@
 import type { Metadata } from "next";
-import { DM_Serif_Display, DM_Sans, JetBrains_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "@/components/providers/Providers";
+import { Header } from "@/components/layout/Header";
 
-const dmSerifDisplay = DM_Serif_Display({
-  weight: "400",
-  subsets: ["latin"],
+const dmSerifDisplay = localFont({
+  src: [
+    {
+      path: "./fonts/dm-serif-display-latin.woff2",
+      style: "normal",
+      weight: "400",
+    },
+  ],
   variable: "--font-display",
   display: "swap",
 });
 
-const dmSans = DM_Sans({
-  subsets: ["latin"],
+const dmSans = localFont({
+  src: [
+    {
+      path: "./fonts/dm-sans-latin.woff2",
+      style: "normal",
+      weight: "100 1000",
+    },
+  ],
   variable: "--font-body",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
+const jetbrainsMono = localFont({
+  src: [
+    {
+      path: "./fonts/jetbrains-mono-latin.woff2",
+      style: "normal",
+      weight: "100 800",
+    },
+  ],
   variable: "--font-mono",
   display: "swap",
 });
@@ -72,7 +90,10 @@ export default function RootLayout({
       className={`${dmSerifDisplay.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
     >
       <body className="min-h-screen antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <Header />
+          {children}
+        </Providers>
       </body>
     </html>
   );

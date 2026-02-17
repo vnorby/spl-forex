@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useMarketDataContext } from "@/components/providers/MarketDataProvider";
 import { formatRate } from "@/lib/utils";
 
@@ -73,6 +74,7 @@ interface CrossRatesMatrixProps {
 }
 
 export function CrossRatesMatrix({ onPairClick }: CrossRatesMatrixProps) {
+  const router = useRouter();
   const { markets, connected } = useMarketDataContext();
   const [hoveredCell, setHoveredCell] = useState<{ row: number; col: number } | null>(null);
 
@@ -251,7 +253,9 @@ export function CrossRatesMatrix({ onPairClick }: CrossRatesMatrixProps) {
                       onMouseLeave={() => setHoveredCell(null)}
                       onClick={() =>
                         !isDiagonal &&
-                        onPairClick?.(baseCurrency, quoteCurrency)
+                        (onPairClick
+                          ? onPairClick(baseCurrency, quoteCurrency)
+                          : router.push("/"))
                       }
                     >
                       {isDiagonal ? (
