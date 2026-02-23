@@ -1,99 +1,164 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useConnection } from "@solana/wallet-adapter-react";
-import { VersionedTransaction } from "@solana/web3.js";
+import { useState, useCallback, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { swapExecutor } from "@/lib/sdk";
+import {
+  address,
+  createSolanaRpc,
+  createSolanaRpcSubscriptions,
+} from "@solana/kit";
+import { useKitTransactionSigner } from "@solana/connector";
+import { useCluster } from "@solana/connector/react";
+import { TransactionBuilder } from "@pipeit/core";
+import {
+  createMetisClient,
+  metisInstructionToKit,
+} from "@pipeit/actions/metis";
+import { TOKEN_REGISTRY } from "@solafx/sdk";
+import { env } from "@/config/env";
 import { useToast } from "@/components/providers/ToastProvider";
+import { getSolanaExplorerClusterQuery } from "@/lib/solana-cluster";
 import type { SwapStatus, SwapResult, RateComparison } from "@solafx/types";
 
 export function useSwapExecution() {
-  const { signTransaction } = useWallet();
-  const { connection } = useConnection();
+  const { signer, ready } = useKitTransactionSigner();
+  const { cluster } = useCluster();
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [status, setStatus] = useState<SwapStatus>("idle");
   const [result, setResult] = useState<SwapResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const rpcUrl = cluster?.url ?? env.heliusRpcUrl ?? env.solanaRpcUrl;
+  const wsUrl = useMemo(() => rpcUrl.replace(/^http/, "ws"), [rpcUrl]);
+  const rpc = useMemo(() => createSolanaRpc(rpcUrl), [rpcUrl]);
+  const rpcSubscriptions = useMemo(
+    () => createSolanaRpcSubscriptions(wsUrl),
+    [wsUrl],
+  );
+  const metisClient = createMetisClient({
+    // Server route injects JUPITER_API_KEY securely.
+    baseUrl: "/api/jupiter/metis",
+  });
 
   const execute = useCallback(
     async (comparison: RateComparison) => {
-      if (!signTransaction || !comparison.jupiterOrderData) {
-        setError("Wallet not connected or no transaction data");
+      if (!ready || !signer) {
+        setError("Wallet not connected");
+        return;
+      }
+      const inputTokenInfo = TOKEN_REGISTRY[comparison.inputToken];
+      const outputTokenInfo = TOKEN_REGISTRY[comparison.outputToken];
+      if (!inputTokenInfo || !outputTokenInfo) {
+        setError("Unsupported token pair");
         return;
       }
 
       try {
-        setStatus("signing");
+        setStatus("executing");
         setError(null);
         setResult(null);
 
-        const txBuffer = Buffer.from(
-          comparison.jupiterOrderData.transaction,
-          "base64",
+        const rawAmount = BigInt(
+          Math.floor(comparison.inputAmount * 10 ** inputTokenInfo.decimals),
         );
-        const tx = VersionedTransaction.deserialize(txBuffer);
-        const signedTx = await signTransaction(tx);
-        const signedBase64 = Buffer.from(signedTx.serialize()).toString("base64");
 
-        setStatus("executing");
-
-        const swapResult = await swapExecutor.execute({
-          signedTransaction: signedBase64,
-          requestId: comparison.jupiterOrderData.requestId,
+        const quoteResponse = await metisClient.getQuote({
+          inputMint: inputTokenInfo.mintAddress,
+          outputMint: outputTokenInfo.mintAddress,
+          amount: rawAmount,
+          slippageBps: 50,
+          swapMode: "ExactIn",
         });
+
+        const swapInstructions = await metisClient.getSwapInstructions({
+          quoteResponse,
+          userPublicKey: String(signer.address),
+          wrapAndUnwrapSol: true,
+          useSharedAccounts: true,
+        });
+
+        const simulationError = (
+          swapInstructions as unknown as { simulationError?: unknown }
+        ).simulationError;
+        if (simulationError) {
+          // Keep going; local simulation in TransactionBuilder is authoritative.
+          console.warn("[Jupiter Metis] swap-instructions simulationError", simulationError);
+        }
+
+        const allInstructions = [
+          ...swapInstructions.otherInstructions.map(metisInstructionToKit),
+          ...swapInstructions.setupInstructions.map(metisInstructionToKit),
+          ...(swapInstructions.tokenLedgerInstruction
+            ? [metisInstructionToKit(swapInstructions.tokenLedgerInstruction)]
+            : []),
+          metisInstructionToKit(swapInstructions.swapInstruction),
+          ...(swapInstructions.cleanupInstruction
+            ? [metisInstructionToKit(swapInstructions.cleanupInstruction)]
+            : []),
+        ];
+
+        const lookupTableAddresses =
+          swapInstructions.addressLookupTableAddresses.map((lookupTableAddress) =>
+            address(lookupTableAddress),
+          );
+
+        setStatus("confirming");
+
+        const executeSwapOnce = async () =>
+          new TransactionBuilder({
+            rpc,
+            computeUnits: { strategy: "simulate", buffer: 1.1 },
+            priorityFee: { strategy: "fixed", microLamports: 200_000 },
+            autoRetry: false,
+            lookupTableAddresses:
+              lookupTableAddresses.length > 0 ? lookupTableAddresses : undefined,
+          })
+            .setFeePayerSigner(signer)
+            .addInstructions(allInstructions)
+            .execute({
+              rpcSubscriptions,
+              commitment: "confirmed",
+              skipPreflight: true,
+            });
+
+        let txSignature: string;
+        try {
+          txSignature = await executeSwapOnce();
+        } catch (executionError) {
+          const message =
+            executionError instanceof Error
+              ? executionError.message
+              : String(executionError);
+          if (message.includes("progressed past the last block")) {
+            txSignature = await executeSwapOnce();
+          } else {
+            throw executionError;
+          }
+        }
+
+        const swapResult: SwapResult = {
+          status: "Success",
+          signature: txSignature,
+          explorerUrl: buildExplorerUrl(txSignature, cluster?.id),
+        };
 
         setResult(swapResult);
 
-        if (swapResult.status === "Success" && swapResult.signature) {
-          // Monitor on-chain confirmation
-          setStatus("confirming");
-          try {
-            const confirmation = await connection.confirmTransaction(
-              swapResult.signature,
-              "confirmed",
-            );
-
-            if (confirmation.value.err) {
-              setStatus("error");
-              setError("Transaction failed on-chain");
-              toast({ type: "error", title: "Swap Failed", message: "Transaction reverted on-chain" });
-            } else {
-              setStatus("success");
-              saveToHistory(comparison, swapResult);
-              queryClient.invalidateQueries({ queryKey: ["jupiter-quote"] });
-              queryClient.invalidateQueries({ queryKey: ["token-balances"] });
-              toast({
-                type: "success",
-                title: "Swap Confirmed",
-                message: `${comparison.inputToken} → ${comparison.outputToken}`,
-                action: swapResult.explorerUrl
-                  ? { label: "View on Explorer", onClick: () => window.open(swapResult.explorerUrl, "_blank") }
-                  : undefined,
-              });
-            }
-          } catch {
-            // If confirmation polling fails, still treat as success
-            setStatus("success");
-            saveToHistory(comparison, swapResult);
-            queryClient.invalidateQueries({ queryKey: ["jupiter-quote"] });
-            queryClient.invalidateQueries({ queryKey: ["token-balances"] });
-            toast({
-              type: "success",
-              title: "Swap Confirmed",
-              message: `${comparison.inputToken} → ${comparison.outputToken}`,
-              action: swapResult.explorerUrl
-                ? { label: "View on Explorer", onClick: () => window.open(swapResult.explorerUrl, "_blank") }
-                : undefined,
-            });
-          }
-        } else {
-          setStatus("error");
-          setError("Transaction failed on-chain");
-          toast({ type: "error", title: "Swap Failed", message: "Transaction failed on-chain" });
-        }
+        setStatus("success");
+        saveToHistory(comparison, swapResult);
+        queryClient.invalidateQueries({ queryKey: ["jupiter-quote"] });
+        queryClient.invalidateQueries({ queryKey: ["token-balances"] });
+        toast({
+          type: "success",
+          title: "Swap Confirmed",
+          message: `${comparison.inputToken} → ${comparison.outputToken}`,
+          action: swapResult.explorerUrl
+            ? {
+                label: "View on Explorer",
+                onClick: () => window.open(swapResult.explorerUrl, "_blank"),
+              }
+            : undefined,
+        });
       } catch (err: unknown) {
         setStatus("error");
         if (err instanceof Error) {
@@ -110,7 +175,7 @@ export function useSwapExecution() {
         }
       }
     },
-    [signTransaction, connection, queryClient, toast],
+    [cluster?.id, metisClient, queryClient, ready, rpc, rpcSubscriptions, signer, toast],
   );
 
   const reset = useCallback(() => {
@@ -120,6 +185,11 @@ export function useSwapExecution() {
   }, []);
 
   return { status, result, error, execute, reset };
+}
+
+function buildExplorerUrl(txSignature: string, clusterId?: string | null) {
+  const clusterQuery = getSolanaExplorerClusterQuery(clusterId);
+  return `https://explorer.solana.com/tx/${txSignature}${clusterQuery}`;
 }
 
 function saveToHistory(comparison: RateComparison, result: SwapResult) {

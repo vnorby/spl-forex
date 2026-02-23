@@ -2,8 +2,6 @@
 
 import React, { useState, useCallback } from "react";
 import type { MarketRow as MarketRowType, RateComparison } from "@solafx/types";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useMarketDataContext } from "@/components/providers/MarketDataProvider";
 import { SparklineChart } from "./SparklineChart";
 import { CandlestickChart } from "./CandlestickChart";
@@ -13,6 +11,7 @@ import { useJupiterQuote } from "@/hooks/useJupiterQuote";
 import { useSwapExecution } from "@/hooks/useSwapExecution";
 import { SwapConfirmModal } from "@/components/swap/SwapConfirmModal";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
+import { useSolanaWallet } from "@/hooks/useSolanaWallet";
 import { formatRate, formatAmount, formatSpread, formatVolume, spreadColor } from "@/lib/utils";
 import { rateEngine } from "@/lib/sdk";
 
@@ -23,8 +22,7 @@ interface PairDetailProps {
 
 export function PairDetail({ row, onClose }: PairDetailProps) {
   const { priceHistory } = useMarketDataContext();
-  const { publicKey } = useWallet();
-  const { setVisible } = useWalletModal();
+  const { walletAddress, connectDefaultWallet } = useSolanaWallet();
   const { status, result, error, execute, reset } = useSwapExecution();
   const { balances } = useTokenBalances();
 
@@ -55,8 +53,8 @@ export function PairDetail({ row, onClose }: PairDetailProps) {
   }, [reset]);
 
   const handleSwapClick = useCallback(async () => {
-    if (!publicKey || !mapping) {
-      setVisible(true);
+    if (!walletAddress || !mapping) {
+      connectDefaultWallet();
       return;
     }
     try {
@@ -64,14 +62,21 @@ export function PairDetail({ row, onClose }: PairDetailProps) {
         inputToken,
         outputToken,
         amount: numAmount,
-        taker: publicKey.toBase58(),
+        taker: walletAddress ?? undefined,
       });
       setExecComparison(comp);
       setConfirmOpen(true);
     } catch {
       // Error fetching executable quote
     }
-  }, [publicKey, mapping, inputToken, outputToken, numAmount, setVisible]);
+  }, [
+    connectDefaultWallet,
+    inputToken,
+    mapping,
+    numAmount,
+    outputToken,
+    walletAddress,
+  ]);
 
   const handleConfirm = useCallback(async () => {
     if (!execComparison) return;
@@ -314,7 +319,7 @@ export function PairDetail({ row, onClose }: PairDetailProps) {
                     >
                       Amount ({inputToken})
                     </label>
-                    {publicKey && (
+                    {walletAddress && (
                       <div
                         className="flex items-center gap-2 text-[10px] uppercase tracking-wider"
                         style={{ fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}
@@ -426,8 +431,8 @@ export function PairDetail({ row, onClose }: PairDetailProps) {
                   </div>
                 )}
 
-                {!publicKey ? (
-                  <Button variant="primary" className="w-full" onClick={() => setVisible(true)}>
+                {!walletAddress ? (
+                  <Button variant="primary" className="w-full" onClick={() => connectDefaultWallet()}>
                     Connect Wallet to Swap
                   </Button>
                 ) : (

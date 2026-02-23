@@ -10,28 +10,29 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@pipeit/actions": "^0.1.2",
+    "@pipeit/core": "^0.2.7",
     "@solafx/sdk": "workspace:*",
     "@solafx/types": "workspace:*",
     "@solafx/ui": "workspace:*",
-    "@solana/wallet-adapter-base": "^0.9.23",
-    "@solana/wallet-adapter-react": "^0.15.35",
-    "@solana/wallet-adapter-react-ui": "^0.9.35",
-    "@solana/wallet-adapter-wallets": "^0.19.32",
-    "@solana/web3.js": "^1.98.0",
-    "@tanstack/react-query": "^5.62.0",
+    "@solana/connector": "^0.2.4",
+    "@solana/kit": "^6.0.1",
+    "@tanstack/react-query": "^5.90.21",
     "lightweight-charts": "^5.1.0",
-    "next": "^15.1.0",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "lucide-react": "^0.542.0",
+    "motion": "^12.34.0",
+    "next": "^16.1.6",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.0",
-    "@types/node": "^22.0.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "eslint": "^9.0.0",
-    "eslint-config-next": "^15.1.0",
-    "tailwindcss": "^4.0.0",
-    "typescript": "^5.6.0"
+    "@tailwindcss/postcss": "^4.1.18",
+    "@types/node": "^25.2.3",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^10.0.0",
+    "eslint-config-next": "^16.1.6",
+    "tailwindcss": "^4.1.18",
+    "typescript": "^5.9.3"
   }
 }

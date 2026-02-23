@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { env } from "@/config/env";
+import { useSolanaWallet } from "@/hooks/useSolanaWallet";
 
 /**
  * Subscribes to wallet account changes via Solana WebSocket.
@@ -13,24 +12,14 @@ import { env } from "@/config/env";
  * Only active when Helius RPC is configured (reliable WebSocket endpoint).
  */
 export function useBalanceSubscription() {
-  const { connection } = useConnection();
-  const { publicKey } = useWallet();
+  const { walletAddress } = useSolanaWallet();
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    if (!publicKey || !env.heliusRpcUrl) return;
-
-    const subscriptionId = connection.onAccountChange(
-      publicKey,
-      () => {
-        // Wallet SOL balance or account data changed — invalidate balance cache
-        queryClient.invalidateQueries({ queryKey: ["token-balances"] });
-      },
-      "confirmed",
-    );
-
-    return () => {
-      connection.removeAccountChangeListener(subscriptionId);
-    };
-  }, [publicKey, connection, queryClient]);
+    if (!walletAddress) return;
+    const intervalId = setInterval(() => {
+      queryClient.invalidateQueries({ queryKey: ["token-balances", walletAddress] });
+    }, 15_000);
+    return () => clearInterval(intervalId);
+  }, [walletAddress, queryClient]);
 }

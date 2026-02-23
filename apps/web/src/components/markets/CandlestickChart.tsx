@@ -60,7 +60,7 @@ export function CandlestickChart({ pair, height = 300 }: CandlestickChartProps) 
       layout: {
         background: { color: "transparent" },
         textColor: "#5c6070",
-        fontFamily: "'JetBrains Mono', monospace",
+        fontFamily: "var(--font-mono)",
         fontSize: 10,
       },
       grid: {

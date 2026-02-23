@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { TOKEN_REGISTRY } from "@solafx/sdk";
 import { useJupiterQuote } from "@/hooks/useJupiterQuote";
 import { useSwapExecution } from "@/hooks/useSwapExecution";
 import { useTokenBalances } from "@/hooks/useTokenBalances";
+import { useSolanaWallet } from "@/hooks/useSolanaWallet";
 import { formatAmount } from "@/lib/utils";
 import { rateEngine } from "@/lib/sdk";
 import type { RateComparison } from "@solafx/types";
@@ -20,8 +19,7 @@ interface InlineSwapProps {
 const QUICK_AMOUNTS = [100, 500, 1000, 5000];
 
 export function InlineSwap({ inputToken, outputToken, onClose }: InlineSwapProps) {
-  const { publicKey } = useWallet();
-  const { setVisible } = useWalletModal();
+  const { walletAddress, connectDefaultWallet } = useSolanaWallet();
   const { balances } = useTokenBalances();
   const { status, result, error, execute, reset } = useSwapExecution();
 
@@ -39,8 +37,8 @@ export function InlineSwap({ inputToken, outputToken, onClose }: InlineSwapProps
   const inputBalance = balances[inputToken] ?? 0;
 
   const handleSwap = useCallback(async () => {
-    if (!publicKey) {
-      setVisible(true);
+    if (!walletAddress) {
+      connectDefaultWallet();
       return;
     }
     try {
@@ -48,13 +46,13 @@ export function InlineSwap({ inputToken, outputToken, onClose }: InlineSwapProps
         inputToken,
         outputToken,
         amount: numAmount,
-        taker: publicKey.toBase58(),
+        taker: walletAddress ?? undefined,
       });
       await execute(comp);
     } catch {
       // handled by useSwapExecution
     }
-  }, [publicKey, inputToken, outputToken, numAmount, setVisible, execute]);
+  }, [connectDefaultWallet, execute, inputToken, numAmount, outputToken, walletAddress]);
 
   const canSwap = numAmount > 0 && status !== "signing" && status !== "executing" && status !== "confirming";
   const isBusy = status === "signing" || status === "executing" || status === "confirming";
@@ -72,7 +70,7 @@ export function InlineSwap({ inputToken, outputToken, onClose }: InlineSwapProps
             <span style={{ color: "var(--color-text-muted)" }}>→</span>
             <span>{outputToken}</span>
           </div>
-          {publicKey && (
+          {walletAddress && (
             <div
               className="flex items-center gap-2 text-[10px] uppercase tracking-wider"
               style={{ fontFamily: "var(--font-mono)", color: "var(--color-text-muted)" }}
@@ -186,9 +184,9 @@ export function InlineSwap({ inputToken, outputToken, onClose }: InlineSwapProps
           </div>
 
           {/* Swap / Connect button */}
-          {!publicKey ? (
+          {!walletAddress ? (
             <button
-              onClick={() => setVisible(true)}
+              onClick={() => connectDefaultWallet()}
               className="whitespace-nowrap border-2 px-5 py-2.5 text-[11px] font-bold uppercase tracking-wider transition-all active:scale-[0.98]"
               style={{
                 fontFamily: "var(--font-mono)",

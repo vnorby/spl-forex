@@ -1,8 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { rateEngine } from "@/lib/sdk";
+import { useSolanaWallet } from "@/hooks/useSolanaWallet";
 import type { RateComparison } from "@solafx/types";
 
 export function useJupiterQuote(
@@ -11,7 +11,7 @@ export function useJupiterQuote(
   amount: number,
   options?: { forExecution?: boolean },
 ) {
-  const { publicKey } = useWallet();
+  const { walletAddress } = useSolanaWallet();
 
   return useQuery<RateComparison>({
     queryKey: [
@@ -19,14 +19,14 @@ export function useJupiterQuote(
       inputToken,
       outputToken,
       amount,
-      options?.forExecution ? publicKey?.toBase58() : null,
+      options?.forExecution ? walletAddress : null,
     ],
     queryFn: () =>
       rateEngine.getComparison({
         inputToken,
         outputToken,
         amount,
-        taker: options?.forExecution ? publicKey?.toBase58() : undefined,
+        taker: options?.forExecution ? walletAddress ?? undefined : undefined,
       }),
     enabled: amount > 0 && !!inputToken && !!outputToken && inputToken !== outputToken,
     refetchInterval: 10_000,

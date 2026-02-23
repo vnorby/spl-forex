@@ -1,26 +1,35 @@
 "use client";
 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useState } from "react";
-import Image from "next/image";
+import { useCluster } from "@solana/connector/react";
 import { WalletButton } from "@/components/wallet/WalletButton";
 import { StablecoinSettings } from "@/components/settings/StablecoinSettings";
-import { env } from "@/config/env";
+import { Logo } from "@/components/layout/Logo";
+import { getSolanaClusterLabel, isSolanaDevnetCluster } from "@/lib/solana-cluster";
 
-export type AppTab = "markets" | "matrix" | "arbitrage" | "tools" | "swap";
+const NAV_ITEMS = [
+  { id: "markets", href: "/", label: "markets" },
+  { id: "matrix", href: "/matrix", label: "matrix" },
+  { id: "arbitrage", href: "/arbitrage", label: "arbitrage" },
+  { id: "tools", href: "/tools", label: "tools" },
+  { id: "swap", href: "/swap", label: "swap" },
+] as const;
 
-interface HeaderProps {
-  activeTab: AppTab;
-  onTabChange: (tab: AppTab) => void;
+function getIsActiveHref(pathname: string, href: string) {
+  if (href === "/") return pathname === "/";
+  return pathname.startsWith(href);
 }
 
-const TABS: AppTab[] = ["markets", "matrix", "arbitrage", "tools", "swap"];
-const isDevnet = env.solanaNetwork === "devnet";
-
-export function Header({ activeTab, onTabChange }: HeaderProps) {
+export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+  const { cluster } = useCluster();
+  const isDevnet = isSolanaDevnetCluster(cluster?.id);
+  const clusterLabel = getSolanaClusterLabel(cluster);
 
-  function handleTabClick(tab: AppTab) {
-    onTabChange(tab);
+  function closeMobileMenu() {
     setMobileMenuOpen(false);
   }
 
@@ -36,37 +45,35 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
         {/* Left: Logo + Desktop nav */}
         <div className="flex items-center gap-4 md:gap-8">
           {/* Logo */}
-          <div className="flex items-center gap-2.5">
-            <Image src="/logo.svg" alt="" width={28} height={28} priority />
-            <div className="flex items-baseline gap-0">
-              <span className="text-xl tracking-tight" style={{ fontFamily: "var(--font-display)" }}>
-                spl.
-              </span>
-              <span className="text-xl tracking-tight" style={{ fontFamily: "var(--font-display)", color: "var(--color-accent)" }}>
-                forex
-              </span>
-            </div>
-          </div>
+          <Link href="/" onClick={closeMobileMenu} className="flex items-center gap-2.5">
+            <Logo className="h-5 w-auto md:h-[21px]" />
+          </Link>
 
           {/* Desktop nav */}
           <nav className="hidden gap-1 md:flex">
-            {TABS.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => handleTabClick(tab)}
-                className={`relative px-4 py-2 text-sm font-medium tracking-wide uppercase transition-colors ${
-                  activeTab === tab
+            {NAV_ITEMS.map((item) => {
+              const isActive = getIsActiveHref(pathname, item.href);
+
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  onClick={closeMobileMenu}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`relative px-4 py-2 text-sm font-medium tracking-wide uppercase transition-colors ${
+                    isActive
                     ? "text-[var(--color-text)]"
                     : "text-[var(--color-text-muted)] hover:text-[var(--color-text-secondary)]"
-                }`}
-                style={{ fontFamily: "var(--font-body)" }}
-              >
-                {tab}
-                {activeTab === tab && (
-                  <span className="absolute inset-x-2 -bottom-3 h-px bg-[var(--color-accent)] md:-bottom-4" />
-                )}
-              </button>
-            ))}
+                  }`}
+                  style={{ fontFamily: "var(--font-body)" }}
+                >
+                  {item.label}
+                  {isActive && (
+                    <span className="absolute inset-x-2 -bottom-3 h-px bg-[var(--color-accent)] md:-bottom-4" />
+                  )}
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
@@ -83,7 +90,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
                 background: isDevnet ? "var(--color-warm-dim)" : "transparent",
               }}
             >
-              {isDevnet ? "Devnet" : "Mainnet"}
+              {clusterLabel}
             </span>
             <WalletButton />
           </div>
@@ -131,21 +138,27 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
           }}
         >
           <nav className="flex flex-col px-4 py-3">
-            {TABS.map((tab) => (
-              <button
-                key={tab}
-                onClick={() => handleTabClick(tab)}
-                className="w-full px-3 py-3 text-left text-sm font-medium uppercase tracking-wide transition-colors"
-                style={{
-                  fontFamily: "var(--font-body)",
-                  color: activeTab === tab ? "var(--color-accent)" : "var(--color-text-secondary)",
-                  background: activeTab === tab ? "var(--color-accent-dim)" : "transparent",
-                  borderLeft: activeTab === tab ? "2px solid var(--color-accent)" : "2px solid transparent",
-                }}
-              >
-                {tab}
-              </button>
-            ))}
+            {NAV_ITEMS.map((item) => {
+              const isActive = getIsActiveHref(pathname, item.href);
+
+              return (
+                <Link
+                  key={item.id}
+                  href={item.href}
+                  onClick={closeMobileMenu}
+                  aria-current={isActive ? "page" : undefined}
+                  className="w-full px-3 py-3 text-left text-sm font-medium uppercase tracking-wide transition-colors"
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    color: isActive ? "var(--color-accent)" : "var(--color-text-secondary)",
+                    background: isActive ? "var(--color-accent-dim)" : "transparent",
+                    borderLeft: isActive ? "2px solid var(--color-accent)" : "2px solid transparent",
+                  }}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
           </nav>
 
           <div
@@ -163,7 +176,7 @@ export function Header({ activeTab, onTabChange }: HeaderProps) {
                   background: isDevnet ? "var(--color-warm-dim)" : "transparent",
                 }}
               >
-                {isDevnet ? "Devnet" : "Mainnet"}
+                {clusterLabel}
               </span>
             </div>
             <WalletButton />
