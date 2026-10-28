@@ -1,6 +1,7 @@
 export const env = {
-  pythHermesUrl:
-    process.env.NEXT_PUBLIC_PYTH_HERMES_URL ?? "https://hermes.pyth.network",
+  // Hermes requires an API key, so the browser goes through our
+  // server-side proxy (/api/pyth/*) instead of calling Pyth directly.
+  pythHermesUrl: process.env.NEXT_PUBLIC_PYTH_HERMES_URL ?? "/api/pyth",
   solanaNetwork: (process.env.NEXT_PUBLIC_SOLANA_NETWORK ?? "mainnet-beta") as
     | "mainnet-beta"
     | "devnet",

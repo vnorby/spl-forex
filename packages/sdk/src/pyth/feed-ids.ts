@@ -1,6 +1,7 @@
 import type { FXPairId } from "@solafx/types";
 
-export const FX_FEED_IDS: Record<FXPairId, string> = {
+/** Pairs Pyth publishes directly. Crosses it dropped are in DERIVED_FX_PAIRS. */
+export const FX_FEED_IDS: Partial<Record<FXPairId, string>> = {
   // Majors
   "EUR/USD": "0xa995d00bb36a63cef7fd2c287dc105fc8f3d93779f062f09551b0af3e81ec30b",
   "USD/JPY": "0xef2c98c804ba503c6a707e38be4dfbb16683775f195b091252bf24693042fd52",
@@ -12,21 +13,7 @@ export const FX_FEED_IDS: Record<FXPairId, string> = {
   // Crosses
   "EUR/JPY": "0xd8c874fa511b9838d094109f996890642421e462c3b29501a2560cecf82c2eb4",
   "EUR/GBP": "0xc349ff6087acab1c0c5442a9de0ea804239cc9fd09be8b1a93ffa0ed7f366d9c",
-  "EUR/CHF": "0x6194ee9b4ae25932ae69e6574871801f0f30b4a3317877c55301a45902aa0c1a",
-  "EUR/AUD": "0xf51e4e46f00cb9153ddb379ea26672084c0263126c56102af148402b7a6d11d3",
-  "EUR/CAD": "0xfec44951e54a606cbbca6fc7fb721c33bb54e4ae641a8a12d5df94313d635a12",
-  "EUR/NZD": "0x589174519ec8e38c11af84436f230bcf600fdb2c9c211303d0d578fda839ea60",
-  "GBP/JPY": "0xcfa65905787703c692c3cac2b8a009a1db51ce68b54f5b206ce6a55bfa2c3cd1",
-  "GBP/AUD": "0xbbcf32c739841d1170ae2dfaf7c1bd2483df5cf241e2ecf5bce5d14cf09982b1",
-  "GBP/CAD": "0xff940d31a543df4485af8f08e81c638cab5af80e399d9928d34f73838a8a106b",
-  "GBP/NZD": "0xb02ec3a90ad50a1e46006dd78a06b1ed70f38322c2cd2010c11f6a8c83c8eb33",
-  "GBP/CHF": "0xae95ee182ff568100d09257956a01d6bd663072e62fe108bae42ecca4400f527",
-  "AUD/JPY": "0x8dbbb66dff44114f0bfc34a1d19f0fe6fc3906dcc72f7668d3ea936e1d6544ce",
   "AUD/NZD": "0x67f98d83d2a5ae486d99bd2ab9da74b09f167fdd4928d4e1189f2360e6943522",
-  "AUD/CAD": "0x95330ad1bcac1bd79179fe59000bfe199ba3fe7f03254220548ef2d034bdf4d6",
-  "CAD/JPY": "0x9e19cbf0b363b3ce3fa8533e171f449f605a7ca5bb272a9b80df4264591c4cbb",
-  "CHF/JPY": "0xe9f0f24d8828dc49e1d7aa6b82373dfaf671f8e28cbf9600b14008670c82a462",
-  "NZD/JPY": "0x40f3b8fa7d81f3087ebbe2fd2ad56cd9fa10327e262ca98f3cefdcbf92f94f2f",
   // Exotics
   "USD/SGD": "0x396a969a9c1480fa15ed50bc59149e2c0075a72fe8f458ed941ddec48bdb4918",
   "USD/BRL": "0xd2db4dbf1aea74e0f666b0e8f73b9580d407f5e5cf931940b06dc633d7a95906",
@@ -38,4 +25,30 @@ export const FX_FEED_IDS: Record<FXPairId, string> = {
   "USD/SEK": "0x8ccb376aa871517e807358d4e3cf0bc7fe4950474dbe6c9ffc21ef64e43fc676",
 };
 
-export const ALL_FX_FEED_IDS = Object.values(FX_FEED_IDS);
+export const ALL_FX_FEED_IDS = Object.values(FX_FEED_IDS).filter((id) => id !== undefined);
+
+export interface DerivedFXPair {
+  legs: [FXPairId, FXPairId];
+  op: "mul" | "div";
+}
+
+/**
+ * Crosses Pyth no longer publishes, priced from two USD legs:
+ * price = legs[0] × legs[1] ("mul") or legs[0] ÷ legs[1] ("div").
+ */
+export const DERIVED_FX_PAIRS: Partial<Record<FXPairId, DerivedFXPair>> = {
+  "EUR/CHF": { legs: ["EUR/USD", "USD/CHF"], op: "mul" },
+  "EUR/AUD": { legs: ["EUR/USD", "AUD/USD"], op: "div" },
+  "EUR/CAD": { legs: ["EUR/USD", "USD/CAD"], op: "mul" },
+  "EUR/NZD": { legs: ["EUR/USD", "NZD/USD"], op: "div" },
+  "GBP/JPY": { legs: ["GBP/USD", "USD/JPY"], op: "mul" },
+  "GBP/AUD": { legs: ["GBP/USD", "AUD/USD"], op: "div" },
+  "GBP/CAD": { legs: ["GBP/USD", "USD/CAD"], op: "mul" },
+  "GBP/NZD": { legs: ["GBP/USD", "NZD/USD"], op: "div" },
+  "GBP/CHF": { legs: ["GBP/USD", "USD/CHF"], op: "mul" },
+  "AUD/JPY": { legs: ["AUD/USD", "USD/JPY"], op: "mul" },
+  "AUD/CAD": { legs: ["AUD/USD", "USD/CAD"], op: "mul" },
+  "CAD/JPY": { legs: ["USD/JPY", "USD/CAD"], op: "div" },
+  "CHF/JPY": { legs: ["USD/JPY", "USD/CHF"], op: "div" },
+  "NZD/JPY": { legs: ["NZD/USD", "USD/JPY"], op: "mul" },
+};

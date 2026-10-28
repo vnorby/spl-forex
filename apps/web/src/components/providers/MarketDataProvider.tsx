@@ -104,7 +104,7 @@ export function MarketDataProvider({ children }: { children: React.ReactNode }) 
         wasStaleRef.current = false;
         toast({ type: "info", title: "Reconnected", message: "Price feed restored" });
       }
-      setConnectionStatus((prev) => (prev === "stale" ? "live" : prev));
+      setConnectionStatus((prev) => (prev === "stale" || prev === "offline" ? "live" : prev));
 
       // Buffer the update (no React state change here)
       pendingUpdatesRef.current[pair] = price;
@@ -156,7 +156,9 @@ export function MarketDataProvider({ children }: { children: React.ReactNode }) 
   // ─── SSE stream ─────────────────────────────────────────────────
   useEffect(() => {
     const allPairs = FX_MARKETS.map((m) => m.pair);
-    const unsubscribe = pythClient.createPriceStream(allPairs, handlePriceUpdate);
+    const unsubscribe = pythClient.createPriceStream(allPairs, handlePriceUpdate, () =>
+      setConnectionStatus("offline"),
+    );
 
     // Sync history to state every 5s (for sparklines + charts)
     const historyInterval = setInterval(() => {

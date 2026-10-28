@@ -32,18 +32,20 @@ apps/
 
 | Service | Purpose | Auth |
 |---------|---------|------|
-| [Pyth Network](https://pyth.network) | Real-time FX oracle prices (28 pairs) | None (public) |
+| [Pyth Network](https://pyth.network) | Real-time FX oracle prices (28 pairs) | API key (server-proxied) |
 | [Jupiter](https://jup.ag) | DEX aggregation + swap execution | API key (server-proxied) |
 | [Helius](https://helius.dev) | Enhanced RPC, DAS API for token balances | API key (server-proxied) |
 
 ### API key security
 
-Jupiter and Helius API keys are **never exposed to the client**. They're kept as server-only env vars and proxied through Next.js API routes:
+Pyth, Jupiter and Helius API keys are **never exposed to the client**. They're kept as server-only env vars and proxied through Next.js API routes:
 
 ```
-/api/jupiter/order   → proxies to api.jup.ag/ultra/v1/order
-/api/jupiter/execute → proxies to api.jup.ag/ultra/v1/execute
-/api/helius          → proxies JSON-RPC to helius-rpc.com
+/api/pyth/v2/updates/price/latest → proxies to hermes.pyth.network (latest prices)
+/api/pyth/v2/updates/price/stream → proxies to hermes.pyth.network (SSE price stream)
+/api/jupiter/order                → proxies to api.jup.ag/ultra/v1/order
+/api/jupiter/execute              → proxies to api.jup.ag/ultra/v1/execute
+/api/helius                       → proxies JSON-RPC to helius-rpc.com
 ```
 
 ## Getting started
@@ -71,6 +73,9 @@ cp apps/web/.env.example apps/web/.env.local
 Edit `apps/web/.env.local`:
 
 ```env
+# Required for oracle prices (get a key from Pyth Terminal)
+PYTH_API_KEY=your-pyth-key
+
 # Required for swaps (get free keys from Jupiter and Helius dashboards)
 JUPITER_API_KEY=your-jupiter-key
 HELIUS_API_KEY=your-helius-key

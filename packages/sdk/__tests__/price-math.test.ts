@@ -1,5 +1,22 @@
 import { describe, it, expect } from "vitest";
-import { normalizePythPrice } from "../src/pyth/price-math";
+import { deriveCrossPrice, normalizePythPrice } from "../src/pyth/price-math";
+
+describe("deriveCrossPrice", () => {
+  const eurUsd = { price: 1.08, confidence: 0.000108, expo: -5, publishTime: 1700000002 };
+  const usdChf = { price: 0.88, confidence: 0.000176, expo: -5, publishTime: 1700000001 };
+
+  it("multiplies legs and adds relative confidences", () => {
+    const result = deriveCrossPrice(eurUsd, usdChf, "mul");
+    expect(result.price).toBeCloseTo(0.9504, 6);
+    // 0.01% + 0.02% of the cross price
+    expect(result.confidence).toBeCloseTo(0.9504 * 0.0003, 9);
+    expect(result.publishTime).toBe(1700000001);
+  });
+
+  it("divides legs", () => {
+    expect(deriveCrossPrice(eurUsd, usdChf, "div").price).toBeCloseTo(1.08 / 0.88, 6);
+  });
+});
 
 describe("normalizePythPrice", () => {
   it("normalizes EUR/USD price correctly", () => {
