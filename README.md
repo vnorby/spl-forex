@@ -10,7 +10,7 @@
 
 spl.forex compares real-time FX oracle rates (via Pyth Network) against DEX prices (via Jupiter) for stablecoin pairs on Solana. When the DEX rate diverges from the oracle rate, you can swap at a discount.
 
-- **33 stablecoins** across 11 fiat currencies (USD, EUR, JPY, GBP, CHF, BRL, TRY, MXN, NGN, IDR, ZAR)
+- **34 stablecoins** across 11 fiat currencies (USD, EUR, JPY, GBP, CHF, BRL, TRY, MXN, NGN, IDR, ZAR)
 - **28 FX pairs** tracked — majors, crosses, and exotics
 - **Live arbitrage detection** — highlights pairs where DEX spread vs oracle is favorable
 - **One-click swaps** — powered by Jupiter Ultra API
@@ -115,9 +115,9 @@ apps/web/src/
 | Currency | Tokens |
 |----------|--------|
 | 🇺🇸 USD | USDC, USDT, PYUSD, USDG, USDP, USDY, USDe, USDu, USDS, USD1, FDUSD, BUIDL, AUSD, CASH, GGUSD, sUSD, syrupUSDC, legacyUSD, USX |
-| 🇪🇺 EUR | EURC, EURCV, EUROe, VEUR |
+| 🇪🇺 EUR | EURC, EURCV, EUROe, VEUR, EUROP |
 | 🇯🇵 JPY | GYEN |
-| 🇬🇧 GBP | VGBP |
+| 🇬🇧 GBP | tGBP, VGBP |
 | 🇨🇭 CHF | VCHF |
 | 🇧🇷 BRL | BRZ |
 | 🇹🇷 TRY | TRYB |

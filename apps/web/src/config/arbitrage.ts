@@ -10,7 +10,7 @@ export const PRIMARY_TOKENS: Record<string, string> = {
   USD: "USDC",
   EUR: "EURC",
   JPY: "GYEN",
-  GBP: "VGBP",
+  GBP: "tGBP",
   CHF: "VCHF",
   BRL: "BRZ",
   TRY: "TRYB",

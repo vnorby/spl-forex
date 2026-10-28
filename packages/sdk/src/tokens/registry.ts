@@ -225,6 +225,15 @@ export const TOKEN_REGISTRY: Record<string, TokenInfo> = {
     logoUri: "/tokens/veur.svg",
     issuer: "VNX",
   },
+  EUROP: {
+    symbol: "EUROP",
+    currency: "EUR",
+    mintAddress: "euro5sNHrZC2wu2RoLvy6xxoVMc3Qnd1vjxoWf4MftA",
+    decimals: 6,
+    name: "EURØP",
+    logoUri: "/tokens/europ.svg",
+    issuer: "Schuman Financial",
+  },
   // GBP stablecoins
   VGBP: {
     symbol: "VGBP",
@@ -234,6 +243,15 @@ export const TOKEN_REGISTRY: Record<string, TokenInfo> = {
     name: "VNX British Pound",
     logoUri: "/tokens/vgbp.svg",
     issuer: "VNX",
+  },
+  tGBP: {
+    symbol: "tGBP",
+    currency: "GBP",
+    mintAddress: "2zMqyX4AYCk6mgy5UZ2S7zUaLxwERhK5WjqDzkPPbSpW",
+    decimals: 9,
+    name: "Tokenised GBP",
+    logoUri: "/tokens/tgbp.svg",
+    issuer: "BCP Technologies",
   },
   // CHF stablecoins
   VCHF: {

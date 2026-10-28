@@ -4,24 +4,24 @@ export const FX_MARKETS: FXMarket[] = [
   // Majors — globalVolume24h = estimated daily forex turnover (BIS triennial survey data)
   { pair: "EUR/USD", base: "EUR", quote: "USD", category: "major", solanaMapping: { inputToken: "USDC", outputToken: "EURC" }, globalVolume24h: 1_980_000_000_000 },
   { pair: "USD/JPY", base: "USD", quote: "JPY", category: "major", solanaMapping: { inputToken: "USDC", outputToken: "GYEN" }, globalVolume24h: 1_250_000_000_000 },
-  { pair: "GBP/USD", base: "GBP", quote: "USD", category: "major", solanaMapping: { inputToken: "VGBP", outputToken: "USDC" }, globalVolume24h: 750_000_000_000 },
+  { pair: "GBP/USD", base: "GBP", quote: "USD", category: "major", solanaMapping: { inputToken: "tGBP", outputToken: "USDC" }, globalVolume24h: 750_000_000_000 },
   { pair: "AUD/USD", base: "AUD", quote: "USD", category: "major", solanaMapping: null, globalVolume24h: 420_000_000_000 },
   { pair: "USD/CAD", base: "USD", quote: "CAD", category: "major", solanaMapping: null, globalVolume24h: 410_000_000_000 },
   { pair: "USD/CHF", base: "USD", quote: "CHF", category: "major", solanaMapping: { inputToken: "USDC", outputToken: "VCHF" }, globalVolume24h: 340_000_000_000 },
   { pair: "NZD/USD", base: "NZD", quote: "USD", category: "major", solanaMapping: null, globalVolume24h: 130_000_000_000 },
   // Crosses — EUR
   { pair: "EUR/JPY", base: "EUR", quote: "JPY", category: "cross", solanaMapping: { inputToken: "EURC", outputToken: "GYEN" }, globalVolume24h: 180_000_000_000 },
-  { pair: "EUR/GBP", base: "EUR", quote: "GBP", category: "cross", solanaMapping: { inputToken: "EURC", outputToken: "VGBP" }, globalVolume24h: 160_000_000_000 },
+  { pair: "EUR/GBP", base: "EUR", quote: "GBP", category: "cross", solanaMapping: { inputToken: "EURC", outputToken: "tGBP" }, globalVolume24h: 160_000_000_000 },
   { pair: "EUR/CHF", base: "EUR", quote: "CHF", category: "cross", solanaMapping: { inputToken: "EURC", outputToken: "VCHF" }, globalVolume24h: 110_000_000_000 },
   { pair: "EUR/AUD", base: "EUR", quote: "AUD", category: "cross", solanaMapping: null, globalVolume24h: 45_000_000_000 },
   { pair: "EUR/CAD", base: "EUR", quote: "CAD", category: "cross", solanaMapping: null, globalVolume24h: 38_000_000_000 },
   { pair: "EUR/NZD", base: "EUR", quote: "NZD", category: "cross", solanaMapping: null, globalVolume24h: 18_000_000_000 },
   // Crosses — GBP
-  { pair: "GBP/JPY", base: "GBP", quote: "JPY", category: "cross", solanaMapping: { inputToken: "VGBP", outputToken: "GYEN" }, globalVolume24h: 110_000_000_000 },
+  { pair: "GBP/JPY", base: "GBP", quote: "JPY", category: "cross", solanaMapping: { inputToken: "tGBP", outputToken: "GYEN" }, globalVolume24h: 110_000_000_000 },
   { pair: "GBP/AUD", base: "GBP", quote: "AUD", category: "cross", solanaMapping: null, globalVolume24h: 28_000_000_000 },
   { pair: "GBP/CAD", base: "GBP", quote: "CAD", category: "cross", solanaMapping: null, globalVolume24h: 22_000_000_000 },
   { pair: "GBP/NZD", base: "GBP", quote: "NZD", category: "cross", solanaMapping: null, globalVolume24h: 12_000_000_000 },
-  { pair: "GBP/CHF", base: "GBP", quote: "CHF", category: "cross", solanaMapping: { inputToken: "VGBP", outputToken: "VCHF" }, globalVolume24h: 35_000_000_000 },
+  { pair: "GBP/CHF", base: "GBP", quote: "CHF", category: "cross", solanaMapping: { inputToken: "tGBP", outputToken: "VCHF" }, globalVolume24h: 35_000_000_000 },
   // Crosses — AUD / CAD / CHF / NZD
   { pair: "AUD/JPY", base: "AUD", quote: "JPY", category: "cross", solanaMapping: null, globalVolume24h: 65_000_000_000 },
   { pair: "AUD/NZD", base: "AUD", quote: "NZD", category: "cross", solanaMapping: null, globalVolume24h: 25_000_000_000 },
